@@ -15,12 +15,36 @@
  * limitations under the License.
  */
 
-package cane.distribute.lease;
+package cane.distribute.lease.protocol;
 
-public interface LeaseCallBack {
+import java.io.Serializable;
+
+final class LeaseProtocol {
+
+    static class Message implements Serializable {
+
+    }
+
     /**
-     * Should be implemented by sub-class which call actual operation when Lease is
-     * still valid.
+     * Hello message send from client to server.
      */
-    void call();
+    static class Hello extends Message {
+
+    }
+
+    /**
+     * Send from client to server,like heartbeat to
+     * update lease.
+     */
+    static class UpdateLease extends Message {
+
+    }
+
+    /**
+     * Send from server to client,indicate that server know
+     * client need update the lease.
+     */
+    static class AcKnowledgeLease extends Message {
+
+    }
 }
