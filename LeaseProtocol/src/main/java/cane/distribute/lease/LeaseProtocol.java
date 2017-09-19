@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package cane.distribute.lease.protocol;
+package cane.distribute.lease;
 
 import java.io.Serializable;
 

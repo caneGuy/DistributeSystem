@@ -22,6 +22,7 @@ import cane.distribute.lease.exception.LeaseException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ThreadFactory;
 
 public class LeaseMaster {
@@ -31,6 +32,8 @@ public class LeaseMaster {
     ThreadFactory factory;
 
     Thread masterServerThread;
+
+    Boolean running;
 
     LeaseMaster(int port) throws LeaseException{
         try {
@@ -44,16 +47,37 @@ public class LeaseMaster {
                     return t;
                 }
             };
-            masterServerThread = factory.newThread(new ConnectionAcceptor());
+            masterServerThread = factory.newThread(this::acceptConnections);
             masterServerThread.start();
+            running = true;
         } catch (IOException e) {
             throw new LeaseException("Init master server instance failed!");
         }
     }
 
-    private class ConnectionAcceptor implements Runnable {
-        public void run() {
-            // TODO
+    private void acceptConnections() {
+        try {
+            while (running) {
+                Socket socket = masterServer.accept();
+                FilteredObjectInputStream in = new FilteredObjectInputStream(socket.getInputStream());
+                LeaseProtocol.Message message = (LeaseProtocol.Message) in.readObject();
+                handleMessage(message);
+            }
+        } catch (IOException e) {
+            //throw new LeaseException("Server failed while accepting connections!");
+            if (running) {
+                // TODO
+            }
+        } catch (ClassNotFoundException e) {
+            if (running) {
+                // TODO
+            }
+        }
+    }
+
+    private void handleMessage(LeaseProtocol.Message message) {
+        if (message instanceof LeaseProtocol.Hello) {
+
         }
     }
 }
