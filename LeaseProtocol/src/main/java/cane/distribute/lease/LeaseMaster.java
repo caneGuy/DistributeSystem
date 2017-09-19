@@ -44,14 +44,16 @@ public class LeaseMaster {
                     return t;
                 }
             };
-            masterServerThread = factory.newThread(this::acceptConnections);
+            masterServerThread = factory.newThread(new ConnectionAcceptor());
             masterServerThread.start();
         } catch (IOException e) {
             throw new LeaseException("Init master server instance failed!");
         }
     }
 
-    private void acceptConnections() {
-
+    private class ConnectionAcceptor implements Runnable {
+        public void run() {
+            // TODO
+        }
     }
 }
