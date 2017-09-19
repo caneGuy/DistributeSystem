@@ -17,5 +17,43 @@
 
 package cane.distribute.lease;
 
+import cane.distribute.lease.exception.LeaseException;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.util.concurrent.ThreadFactory;
+
 public class LeaseMaster {
+
+    ServerSocket masterServer;
+
+    ThreadFactory factory;
+
+    Thread masterServerThread;
+
+    LeaseMaster(int port) throws LeaseException{
+        try {
+            masterServer = new ServerSocket();
+            masterServer.setReuseAddress(true);
+            masterServer.bind(new InetSocketAddress(port));
+            factory = new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setDaemon(true);
+                    return t;
+                }
+            };
+            masterServerThread = factory.newThread(new ConnectionAcceptor());
+            masterServerThread.start();
+        } catch (IOException e) {
+            throw new LeaseException("Init master server instance failed!");
+        }
+    }
+
+    private class ConnectionAcceptor implements Runnable {
+        public void run() {
+            // TODO
+        }
+    }
 }
