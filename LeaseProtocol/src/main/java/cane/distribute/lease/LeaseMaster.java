@@ -18,14 +18,18 @@
 package cane.distribute.lease;
 
 import cane.distribute.lease.exception.LeaseException;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
 
-public class LeaseMaster {
+public class LeaseMaster implements Closeable{
 
     ServerSocket masterServer;
 
@@ -34,6 +38,12 @@ public class LeaseMaster {
     Thread masterServerThread;
 
     Boolean running;
+
+    LeaseManager leaseManager;
+
+    LinkedBlockingDeque<Socket> sockets;
+
+    Thread replyThread;
 
     LeaseMaster(int port) throws LeaseException{
         try {
@@ -49,6 +59,11 @@ public class LeaseMaster {
             };
             masterServerThread = factory.newThread(this::acceptConnections);
             masterServerThread.start();
+            //TODO:Default interval is 1 minute, need to fetch from config file
+            leaseManager = new LeaseManager(60000);
+            sockets = new LinkedBlockingDeque<>();
+            replyThread = factory.newThread(this::replyClient);
+            replyThread.start();
             running = true;
         } catch (IOException e) {
             throw new LeaseException("Init master server instance failed!");
@@ -59,25 +74,61 @@ public class LeaseMaster {
         try {
             while (running) {
                 Socket socket = masterServer.accept();
-                FilteredObjectInputStream in = new FilteredObjectInputStream(socket.getInputStream());
-                LeaseProtocol.Message message = (LeaseProtocol.Message) in.readObject();
-                handleMessage(message);
+                sockets.add(socket);
             }
         } catch (IOException e) {
-            //throw new LeaseException("Server failed while accepting connections!");
-            if (running) {
-                // TODO
-            }
-        } catch (ClassNotFoundException e) {
-            if (running) {
-                // TODO
-            }
+            //TODO
         }
     }
 
-    private void handleMessage(LeaseProtocol.Message message) {
-        if (message instanceof LeaseProtocol.Hello) {
-
+    public void replyClient() {
+        try {
+            while (running) {
+                Socket socket = sockets.take();
+                handleMessage(socket);
+            }
+        } catch (InterruptedException | IOException e) {
+            // TODO
+        } catch (LeaseException e) {
+            // TODO
         }
+    }
+
+    private void handleMessage(Socket socket) throws LeaseException, IOException{
+        try {
+            FilteredObjectInputStream in = new FilteredObjectInputStream(socket.getInputStream());
+            LeaseProtocol.ClientMessage message = (LeaseProtocol.ClientMessage) in.readObject();
+            String clientName = message.clientName;
+            if (message instanceof LeaseProtocol.Hello) {
+                Lease lease = leaseManager.newLease(clientName);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                LeaseProtocol.AcKnowledgeLease acKnowledgeLease =
+                        new LeaseProtocol.AcKnowledgeLease(
+                                lease.getLastUpdateTime() + leaseManager.leaseInterval);
+                out.writeObject(acKnowledgeLease);
+                out.flush();
+                out.close();
+            } else {
+                // update: need to check if expire or not by lastUpdateTime
+                // if expired then send a invalid message to client
+            }
+        } catch (Throwable e) {
+            throw new LeaseException("Handle failed for " + socket.getRemoteSocketAddress());
+        } finally {
+            socket.close();
+        }
+    }
+
+    /**
+     * Clear resources
+     */
+    public void close() {
+        sockets.forEach(socket -> {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                // TODO
+            }
+        });
     }
 }

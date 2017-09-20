@@ -17,6 +17,7 @@
 
 package cane.distribute.lease;
 
+import javax.lang.model.element.NestingKind;
 import java.io.Serializable;
 
 final class LeaseProtocol {
@@ -26,25 +27,69 @@ final class LeaseProtocol {
     }
 
     /**
+     * Base class for message send from client to server.
+     */
+    static class ClientMessage extends Message {
+        final String clientName;
+
+        ClientMessage(String name) {
+            clientName = name;
+        }
+    }
+
+    /**
      * Hello message send from client to server.
      */
-    static class Hello extends Message {
+    static class Hello extends ClientMessage {
 
+        Hello(String name) {
+            super(name);
+        }
     }
 
     /**
      * Send from client to server,like heartbeat to
      * update lease.
      */
-    static class UpdateLease extends Message {
+    static class UpdateLease extends ClientMessage {
+        final long lastUpdateTime;
 
+        UpdateLease(long time, String name) {
+            super(name);
+            lastUpdateTime = time;
+        }
+    }
+
+    /**
+     * Base class for message send from server to client.
+     */
+    static class ServerMessage extends Message {
+        final long leaseExpireTime;
+
+        ServerMessage(long time) {
+            leaseExpireTime = time;
+        }
     }
 
     /**
      * Send from server to client,indicate that server know
      * client need update the lease.
      */
-    static class AcKnowledgeLease extends Message {
+    static class AcKnowledgeLease extends ServerMessage {
 
+        AcKnowledgeLease(long expireTime) {
+            super(expireTime);
+        }
+    }
+
+    /**
+     * Send from server to client to indicate that lease has expired,
+     * client need to reconnect to server.
+     */
+    static class InvalidLease extends ServerMessage {
+
+        InvalidLease(long expireTime) {
+            super(expireTime);
+        }
     }
 }

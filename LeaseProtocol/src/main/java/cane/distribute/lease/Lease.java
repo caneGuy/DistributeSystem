@@ -17,11 +17,13 @@
 
 package cane.distribute.lease;
 
+import java.io.Serializable;
+
 /**
  * Protocol between LeaseManager and LeaseClient
  *
  */
-public class Lease implements Comparable {
+public class Lease implements Comparable,Serializable {
     /**
      * The latest update time of the Lease
      */

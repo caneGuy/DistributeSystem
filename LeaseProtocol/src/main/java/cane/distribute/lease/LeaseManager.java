@@ -21,6 +21,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LeaseManager {
+    protected long leaseInterval;
+
     /**
      * Mapping from replica name to Lease
      */
@@ -29,28 +31,32 @@ public class LeaseManager {
 
     private TreeSet<Lease> _sortedLeases = new TreeSet<Lease>();
 
+    LeaseManager(long interval) {
+        leaseInterval = interval;
+    }
+
     /**
      * Create a new lease for given replica
-     * @param replicaName
+     * @param clientName
      * @return
      */
-    public Lease newLease(String replicaName) {
-        Lease lease = new Lease(replicaName);
-        _currentLeases.put(replicaName, lease);
+    public Lease newLease(String clientName) {
+        Lease lease = new Lease(clientName);
+        _currentLeases.put(clientName, lease);
         _sortedLeases.add(lease);
         return lease;
     }
 
     /**
      * Update lease for given replica
-     * @param replicaName
+     * @param clientName
      */
-    public void updateLease(String replicaName) {
-        if (_currentLeases.contains(replicaName)) {
-            Lease lease = _currentLeases.get(replicaName);
+    public void updateLease(String clientName) {
+        if (_currentLeases.contains(clientName)) {
+            Lease lease = _currentLeases.get(clientName);
             _sortedLeases.remove(lease);
             lease.renew();
-            _currentLeases.put(replicaName, lease);
+            _currentLeases.put(clientName, lease);
             _sortedLeases.add(lease);
         }
         //TODO: NULL throw error exception
