@@ -51,15 +51,16 @@ public class LeaseManager {
      * Update lease for given replica
      * @param clientName
      */
-    public void updateLease(String clientName) {
+    public Lease updateLease(String clientName) {
+        Lease lease = null;
         if (_currentLeases.contains(clientName)) {
-            Lease lease = _currentLeases.get(clientName);
+            lease = _currentLeases.get(clientName);
             _sortedLeases.remove(lease);
             lease.renew();
             _currentLeases.put(clientName, lease);
             _sortedLeases.add(lease);
         }
-        //TODO: NULL throw error exception
+        return lease;
     }
 
     /**

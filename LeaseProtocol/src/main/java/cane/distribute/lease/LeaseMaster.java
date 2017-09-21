@@ -18,7 +18,6 @@
 package cane.distribute.lease;
 
 import cane.distribute.lease.exception.LeaseException;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -50,12 +49,10 @@ public class LeaseMaster implements Closeable{
             masterServer = new ServerSocket();
             masterServer.setReuseAddress(true);
             masterServer.bind(new InetSocketAddress(port));
-            factory = new ThreadFactory() {
-                public Thread newThread(Runnable r) {
+            factory = (r) -> {
                     Thread t = new Thread(r);
                     t.setDaemon(true);
                     return t;
-                }
             };
             masterServerThread = factory.newThread(this::acceptConnections);
             masterServerThread.start();
@@ -66,7 +63,7 @@ public class LeaseMaster implements Closeable{
             replyThread.start();
             running = true;
         } catch (IOException e) {
-            throw new LeaseException("Init master server instance failed!");
+            throw new LeaseException("Init master server instance failed!", e);
         }
     }
 
@@ -108,12 +105,24 @@ public class LeaseMaster implements Closeable{
                 out.writeObject(acKnowledgeLease);
                 out.flush();
                 out.close();
-            } else {
-                // update: need to check if expire or not by lastUpdateTime
-                // if expired then send a invalid message to client
+            } else if (message instanceof LeaseProtocol.UpdateLease) {
+                LeaseProtocol.UpdateLease updateMessage = (LeaseProtocol.UpdateLease) message;
+                long lastUpdateTime = updateMessage.lastUpdateTime;
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                Lease lease = leaseManager.updateLease(clientName);
+                if (lastUpdateTime <= System.currentTimeMillis() - 1000 || lease == null) {
+                    out.writeObject(new LeaseProtocol.InvalidLease(lastUpdateTime));
+                } else {
+                    LeaseProtocol.AcKnowledgeLease acKnowledgeLease =
+                            new LeaseProtocol.AcKnowledgeLease(
+                                    lease.getLastUpdateTime() + leaseManager.leaseInterval);
+                    out.writeObject(acKnowledgeLease);
+                }
+                out.flush();
+                out.close();
             }
-        } catch (Throwable e) {
-            throw new LeaseException("Handle failed for " + socket.getRemoteSocketAddress());
+        } catch (Exception e) {
+            throw new LeaseException("Handle failed for " + socket.getRemoteSocketAddress(), e);
         } finally {
             socket.close();
         }
@@ -122,7 +131,7 @@ public class LeaseMaster implements Closeable{
     /**
      * Clear resources
      */
-    public void close() {
+    public void close() throws IOException{
         sockets.forEach(socket -> {
             try {
                 socket.close();

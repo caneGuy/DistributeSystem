@@ -17,26 +17,100 @@
 
 package cane.distribute.lease;
 
-public class LeaseClient {
+import cane.distribute.lease.exception.LeaseException;
 
-    private Lease _holdLease;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.concurrent.ThreadFactory;
 
-    public void requestLease(String host, int port) {
+public class LeaseClient implements Closeable{
+
+    Thread clientThread;
+
+    Boolean running = false;
+
+    Socket clientSocket;
+
+    ObjectOutputStream out;
+
+    String clientName = "Default"; // client name may be configurable
+
+    long leaseExpireTime;
+
+    String masterHost;
+    int masterPort;
+
+    LeaseClient(String host, int port) throws LeaseException{
+        try {
+            masterHost = host;
+            masterPort = port;
+            clientSocket = new Socket(host, port);
+            clientThread = ((ThreadFactory)(Runnable r) -> {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                return t;
+            }).newThread(this::handleMessage);
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
+            clientName = InetAddress.getLocalHost().getHostName();
+            sendMessage(new LeaseProtocol.Hello(clientName));
+            running = true;
+        } catch (Exception e) {
+            throw new LeaseException("Failed to init client!", e);
+        }
 
     }
 
-    public void doCall(LeaseCallBack callBack) {
-        //TODO: check lease is expired or not
+    private void handleMessage() {
+        while (running) {
+            try {
+                FilteredObjectInputStream in =
+                        new FilteredObjectInputStream(clientSocket.getInputStream());
+                LeaseProtocol.ServerMessage message =
+                        (LeaseProtocol.ServerMessage)in.readObject();
+                if (message instanceof LeaseProtocol.AcKnowledgeLease) {
+                    leaseExpireTime = message.leaseExpireTime;
+                    updateLease();
+                } else if (message instanceof LeaseProtocol.InvalidLease) {
+                    close();
+                    clientSocket = new Socket(masterHost, masterPort);
+                    out = new ObjectOutputStream(clientSocket.getOutputStream());
+                }
+            } catch (Exception e) {
+                // TODO
+            }
+        }
+    }
+
+    private void updateLease() throws LeaseException{
+        while (leaseExpireTime > System.currentTimeMillis()) {
+            // Do nothing
+        }
+        sendMessage(new LeaseProtocol.UpdateLease(leaseExpireTime, clientName));
+    }
+
+    public void doCall(LeaseCallBack callBack) throws LeaseException{
+        if (leaseExpireTime < System.currentTimeMillis()) {
+            throw new LeaseException("Lease has expired,can not call this operation.");
+        }
         callBack.call();
     }
 
-    private void renewLease(String host, int port) {
-
+    private void sendMessage(LeaseProtocol.ClientMessage message) throws LeaseException{
+        try {
+            out.writeObject(message);
+            out.flush();
+        } catch (IOException e) {
+            throw new LeaseException("Send message failed!", e);
+        }
     }
 
-    class LeaseUpdater implements Runnable {
-        public void run() {
-
-        }
+    @Override
+    public void close() throws IOException {
+        leaseExpireTime = -1L;
+        out.close();
+        clientSocket.close();
     }
 }

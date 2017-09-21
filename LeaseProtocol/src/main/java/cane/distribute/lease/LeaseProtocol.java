@@ -87,7 +87,10 @@ final class LeaseProtocol {
      * client need to reconnect to server.
      */
     static class InvalidLease extends ServerMessage {
-
+        /**
+         * For this message expireTime is useless till now.
+         * @param expireTime
+         */
         InvalidLease(long expireTime) {
             super(expireTime);
         }

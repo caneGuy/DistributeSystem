@@ -17,10 +17,15 @@
 
 package cane.distribute.lease.exception;
 
-public class LeaseException extends Throwable {
+public class LeaseException extends Exception {
     String exceptionMessage;
 
-    public LeaseException(String errMessage) {
+    Exception originalException;
+
+    public LeaseException(String errMessage, Exception... e) {
         this.exceptionMessage = errMessage;
+        if (e.length > 0) {
+            this.originalException = e[0];
+        }
     }
 }
