@@ -30,19 +30,19 @@ import java.util.concurrent.ThreadFactory;
 
 public class LeaseMaster implements Closeable{
 
-    ServerSocket masterServer;
+    private ServerSocket masterServer;
 
-    ThreadFactory factory;
+    private ThreadFactory factory;
 
-    Thread masterServerThread;
+    private Thread masterServerThread;
 
-    Boolean running;
+    private Boolean running = false;
 
-    LeaseManager leaseManager;
+    private LeaseManager leaseManager;
 
-    LinkedBlockingDeque<Socket> sockets;
+    private LinkedBlockingDeque<Socket> sockets;
 
-    Thread replyThread;
+    private Thread replyThread;
 
     LeaseMaster(int port) throws LeaseException{
         try {
@@ -54,6 +54,8 @@ public class LeaseMaster implements Closeable{
                     t.setDaemon(true);
                     return t;
             };
+            // running flag should be set before thread start
+            running = true;
             masterServerThread = factory.newThread(this::acceptConnections);
             masterServerThread.start();
             //TODO:Default interval is 1 minute, need to fetch from config file
@@ -61,8 +63,8 @@ public class LeaseMaster implements Closeable{
             sockets = new LinkedBlockingDeque<>();
             replyThread = factory.newThread(this::replyClient);
             replyThread.start();
-            running = true;
         } catch (IOException e) {
+            running = false;
             throw new LeaseException("Init master server instance failed!", e);
         }
     }
@@ -104,7 +106,6 @@ public class LeaseMaster implements Closeable{
                                 lease.getLastUpdateTime() + leaseManager.leaseInterval);
                 out.writeObject(acKnowledgeLease);
                 out.flush();
-                out.close();
             } else if (message instanceof LeaseProtocol.UpdateLease) {
                 LeaseProtocol.UpdateLease updateMessage = (LeaseProtocol.UpdateLease) message;
                 long lastUpdateTime = updateMessage.lastUpdateTime;
@@ -119,7 +120,6 @@ public class LeaseMaster implements Closeable{
                     out.writeObject(acKnowledgeLease);
                 }
                 out.flush();
-                out.close();
             }
         } catch (Exception e) {
             throw new LeaseException("Handle failed for " + socket.getRemoteSocketAddress(), e);
@@ -132,6 +132,7 @@ public class LeaseMaster implements Closeable{
      * Clear resources
      */
     public void close() throws IOException{
+        running = false;
         sockets.forEach(socket -> {
             try {
                 socket.close();

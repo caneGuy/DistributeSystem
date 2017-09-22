@@ -28,35 +28,37 @@ import java.util.concurrent.ThreadFactory;
 
 public class LeaseClient implements Closeable{
 
-    Thread clientThread;
+    private Thread clientThread;
 
-    Boolean running = false;
+    private Boolean running = false;
 
-    Socket clientSocket;
+    private Socket clientSocket;
 
-    ObjectOutputStream out;
+    private ObjectOutputStream out;
 
-    String clientName = "Default"; // client name may be configurable
+    private String clientName = "Default"; // client name may be configurable
 
-    long leaseExpireTime;
+    private long leaseExpireTime = -1;
 
-    String masterHost;
-    int masterPort;
+    private String masterHost;
+    private int masterPort;
 
-    LeaseClient(String host, int port) throws LeaseException{
+    LeaseClient(String masterHost, int masterPort) throws LeaseException{
         try {
-            masterHost = host;
-            masterPort = port;
-            clientSocket = new Socket(host, port);
+            this.masterHost = masterHost;
+            this.masterPort = masterPort;
+            clientSocket = new Socket(masterHost, masterPort);
+            // running flag should set before thread start
+            running = true;
             clientThread = ((ThreadFactory)(Runnable r) -> {
                 Thread t = new Thread(r);
                 t.setDaemon(true);
                 return t;
             }).newThread(this::handleMessage);
+            clientThread.start();
             out = new ObjectOutputStream(clientSocket.getOutputStream());
             clientName = InetAddress.getLocalHost().getHostName();
             sendMessage(new LeaseProtocol.Hello(clientName));
-            running = true;
         } catch (Exception e) {
             throw new LeaseException("Failed to init client!", e);
         }
@@ -105,6 +107,11 @@ public class LeaseClient implements Closeable{
         } catch (IOException e) {
             throw new LeaseException("Send message failed!", e);
         }
+    }
+
+    // For testing
+    public long getLeaseExpireTime() {
+        return this.leaseExpireTime;
     }
 
     @Override
