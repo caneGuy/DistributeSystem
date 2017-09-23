@@ -53,6 +53,7 @@ public class LeaseClient implements Closeable{
             clientThread = ((ThreadFactory)(Runnable r) -> {
                 Thread t = new Thread(r);
                 t.setDaemon(true);
+                t.setName("Client-Handle");
                 return t;
             }).newThread(this::handleMessage);
             clientThread.start();

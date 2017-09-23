@@ -57,11 +57,13 @@ public class LeaseMaster implements Closeable{
             // running flag should be set before thread start
             running = true;
             masterServerThread = factory.newThread(this::acceptConnections);
+            masterServerThread.setName("Master-Server");
             masterServerThread.start();
             //TODO:Default interval is 1 minute, need to fetch from config file
             leaseManager = new LeaseManager(60000);
             sockets = new LinkedBlockingDeque<>();
             replyThread = factory.newThread(this::replyClient);
+            replyThread.setName("Server-Reply");
             replyThread.start();
         } catch (IOException e) {
             running = false;
@@ -113,6 +115,7 @@ public class LeaseMaster implements Closeable{
                 Lease lease = leaseManager.updateLease(clientName);
                 if (lastUpdateTime <= System.currentTimeMillis() - 1000 || lease == null) {
                     out.writeObject(new LeaseProtocol.InvalidLease(lastUpdateTime));
+                    leaseManager.removeLease(clientName);
                 } else {
                     LeaseProtocol.AcKnowledgeLease acKnowledgeLease =
                             new LeaseProtocol.AcKnowledgeLease(

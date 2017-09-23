@@ -55,6 +55,6 @@ public class Lease implements Comparable,Serializable {
     }
 
     public int compareTo(Object o) {
-        return this._lastUpdateTime > ((Lease)o).getLastUpdateTime() ? 1 : 0;
+        return this._lastUpdateTime > ((Lease)o).getLastUpdateTime() ? -1 : 0;
     }
 }

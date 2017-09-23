@@ -17,8 +17,12 @@
 
 package cane.distribute.lease;
 
+import java.util.Iterator;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class LeaseManager {
     protected long leaseInterval;
@@ -29,10 +33,13 @@ public class LeaseManager {
     private ConcurrentHashMap<String, Lease> _currentLeases =
             new ConcurrentHashMap<String, Lease>();
 
-    private TreeSet<Lease> _sortedLeases = new TreeSet<Lease>();
+    private TreeSet<Lease> _sortedLeases = new TreeSet<>();
 
     LeaseManager(long interval) {
         leaseInterval = interval;
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            garbageCollectLease();
+        }, 10 * 60 * 1000, 30, TimeUnit.MINUTES);
     }
 
     /**
@@ -42,8 +49,10 @@ public class LeaseManager {
      */
     public Lease newLease(String clientName) {
         Lease lease = new Lease(clientName);
-        _currentLeases.put(clientName, lease);
-        _sortedLeases.add(lease);
+        synchronized (this) {
+            _currentLeases.put(clientName, lease);
+            _sortedLeases.add(lease);
+        }
         return lease;
     }
 
@@ -54,11 +63,13 @@ public class LeaseManager {
     public Lease updateLease(String clientName) {
         Lease lease = null;
         if (_currentLeases.contains(clientName)) {
-            lease = _currentLeases.get(clientName);
-            _sortedLeases.remove(lease);
-            lease.renew();
-            _currentLeases.put(clientName, lease);
-            _sortedLeases.add(lease);
+            synchronized (this) {
+                lease = _currentLeases.get(clientName);
+                _sortedLeases.remove(lease);
+                lease.renew();
+                _currentLeases.put(clientName, lease);
+                _sortedLeases.add(lease);
+            }
         }
         return lease;
     }
@@ -68,20 +79,22 @@ public class LeaseManager {
      * @param replicaName
      */
     public void removeLease(String replicaName) {
-        _sortedLeases.remove(_currentLeases.get(replicaName));
-        _currentLeases.remove(replicaName);
-    }
-
-    /**
-     * De
-     */
-    class LeaseMonitor implements Runnable {
-        public void run() {
-
+        synchronized (this) {
+            _currentLeases.remove(replicaName);
+            _sortedLeases.remove(_currentLeases.get(replicaName));
         }
     }
 
-    private void checkLeases() {
-
+    private void garbageCollectLease() {
+        // TODO:use double-buffer to improve performance
+        synchronized (this) {
+            Iterator iterator = _sortedLeases.iterator();
+            while (iterator.hasNext()) {
+                Lease lease = (Lease)iterator.next();
+                if (lease.getLastUpdateTime() + leaseInterval <= System.currentTimeMillis()) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 }
