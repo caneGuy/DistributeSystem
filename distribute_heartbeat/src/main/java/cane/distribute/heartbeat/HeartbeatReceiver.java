@@ -17,5 +17,9 @@
 
 package cane.distribute.heartbeat;
 
-public class HeartbeatReceiver {
+/**
+ * Heartbeat receiver,T is the protocol type of heartbeat message.
+ * @param <T>
+ */
+public class HeartbeatReceiver<T> {
 }

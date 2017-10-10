@@ -18,8 +18,17 @@
 package cane.distribute.heartbeat;
 
 /**
- * Heartbeat reporter,T is the protocol type of heartbeat message.
- * @param <T>
+ * Base class for failure detector.
  */
-public class HeartbeatReporter<T> {
+public class AbstractFailureDetector<T> {
+
+  /**
+   * Process received heartbeat message and do failure detect.
+   * @param message
+   * @return weather reporter process failure or not
+   */
+  protected boolean detectFailure(T message) throws Exception{
+    throw new Exception("Need to be implemented!");
+  }
+
 }
