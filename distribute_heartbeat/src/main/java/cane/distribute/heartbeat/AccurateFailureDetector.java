@@ -41,7 +41,7 @@ public class AccurateFailureDetector extends AbstractFailureDetector {
   public void interpret(String endpoint) {
     ArrivalWindow windowForThisEp = endpointToSamples.get(endpoint);
     if (windowForThisEp == null) {
-      return;
+      windowForThisEp = new ArrivalWindow();
     }
     long now = System.currentTimeMillis();
     double phi = windowForThisEp.phi(now);
@@ -60,14 +60,15 @@ public class AccurateFailureDetector extends AbstractFailureDetector {
     private double lastMean = 0; // used to avoid overflow
 
     protected double phi(long tnow) {
+      arrivalIntervals.add(tnow);
       int size = arrivalIntervals.size();
-      double log = 0d;
 
-      if (size > 0) {
-        double t = tnow - arrivalIntervals.get(0);
-        arrivalIntervals.add(tnow);
-        double probability = p(t);
-        log = (-1) * Math.log10( probability );
+      double t = arrivalIntervals.get(size - 1) - arrivalIntervals.get(0);
+      double probability = p(t);
+      double log = (-1) * Math.log10( probability );
+
+      if (size > maxSize) {
+        arrivalIntervals.remove();
       }
       return log;
     }
@@ -84,7 +85,6 @@ public class AccurateFailureDetector extends AbstractFailureDetector {
         lastMean += arrivalIntervals.get(size - 1) / size;
       } else {
         lastMean += (arrivalIntervals.get(size - 1) - arrivalIntervals.get(0)) / maxSize;
-        arrivalIntervals.remove();
       }
       return lastMean;
     }
