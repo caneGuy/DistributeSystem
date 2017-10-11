@@ -15,22 +15,25 @@
  * limitations under the License.
  */
 
-package cane.distribute.heartbeat;
-
-import cane.distribute.heartbeat.protocol.BaseHeartbeatProtocol;
+package cane.distribute.heartbeat.protocol;
 
 /**
- * Base class for failure detector.
+ * System use this failure detector should implement this protocol
+ * for it's own protocol.
  */
-public class AbstractFailureDetector {
+public abstract class BaseHeartbeatProtocol {
 
   /**
-   * Process received heartbeat message and do failure detect.
-   * Child implementation should add listener to use detected result.
-   * @param message
-   * @return weather reporter process failure or not
+   * name of the endpoint
    */
-  protected void detectFailure(BaseHeartbeatProtocol message) throws Exception{
-    throw new Exception("Need to be implemented!");
+  private String endpoint = "Unknown";
+
+  public String getEndpoint() {
+    return endpoint;
   }
+
+  public void setEndpoint(String endpoint) {
+    this.endpoint = endpoint;
+  }
+
 }

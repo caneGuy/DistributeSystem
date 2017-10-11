@@ -17,6 +17,9 @@
 
 package cane.distribute.heartbeat;
 
+import cane.distribute.heartbeat.protocol.BaseHeartbeatProtocol;
+
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,7 +31,62 @@ public class AccurateFailureDetector extends AbstractFailureDetector {
   private ConcurrentHashMap<String, ArrivalWindow> endpointToSamples =
           new ConcurrentHashMap<String, ArrivalWindow>();
 
+  private int phiSuspectThreshold = 8;
+
+  @Override
+  protected void detectFailure(BaseHeartbeatProtocol message) throws Exception {
+    interpret(message.getEndpoint());
+  }
+
+  public void interpret(String endpoint) {
+    ArrivalWindow windowForThisEp = endpointToSamples.get(endpoint);
+    if (windowForThisEp == null) {
+      return;
+    }
+    long now = System.currentTimeMillis();
+    double phi = windowForThisEp.phi(now);
+    if (phi > phiSuspectThreshold) {
+      // add listener here
+      // example:listener.suspect(ep)
+    }
+  }
+
   private class ArrivalWindow {
 
+    private LinkedList<Long> arrivalIntervals = new LinkedList<Long>();
+
+    private int maxSize = 10; // need to be configurable
+
+    private double lastMean = 0; // used to avoid overflow
+
+    protected double phi(long tnow) {
+      int size = arrivalIntervals.size();
+      double log = 0d;
+
+      if (size > 0) {
+        double t = tnow - arrivalIntervals.get(0);
+        arrivalIntervals.add(tnow);
+        double probability = p(t);
+        log = (-1) * Math.log10( probability );
+      }
+      return log;
+    }
+
+    private double p(double t) {
+      double mean = mean();
+      double exponent = (-1)*(t)/mean;
+      return 1 - (1 - Math.pow(Math.E, exponent));
+    }
+
+    private double mean() {
+      int size = arrivalIntervals.size();
+      if (size <= maxSize) {
+        lastMean += arrivalIntervals.get(size - 1) / size;
+      } else {
+        lastMean += (arrivalIntervals.get(size - 1) - arrivalIntervals.get(0)) / maxSize;
+        arrivalIntervals.remove();
+      }
+      return lastMean;
+    }
   }
 }

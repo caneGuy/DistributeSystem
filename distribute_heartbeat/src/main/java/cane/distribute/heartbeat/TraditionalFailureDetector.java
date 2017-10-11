@@ -17,20 +17,5 @@
 
 package cane.distribute.heartbeat;
 
-import cane.distribute.heartbeat.protocol.BaseHeartbeatProtocol;
-
-/**
- * Base class for failure detector.
- */
-public class AbstractFailureDetector {
-
-  /**
-   * Process received heartbeat message and do failure detect.
-   * Child implementation should add listener to use detected result.
-   * @param message
-   * @return weather reporter process failure or not
-   */
-  protected void detectFailure(BaseHeartbeatProtocol message) throws Exception{
-    throw new Exception("Need to be implemented!");
-  }
+public class TraditionalFailureDetector extends AbstractFailureDetector {
 }
