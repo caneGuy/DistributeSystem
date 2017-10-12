@@ -26,14 +26,13 @@ public abstract class BaseHeartbeatProtocol {
   /**
    * name of the endpoint
    */
-  private String endpoint = "Unknown";
+  private String endpoint;
+
+  public BaseHeartbeatProtocol(String endpoint) {
+    this.endpoint = endpoint;
+  }
 
   public String getEndpoint() {
     return endpoint;
   }
-
-  public void setEndpoint(String endpoint) {
-    this.endpoint = endpoint;
-  }
-
 }
