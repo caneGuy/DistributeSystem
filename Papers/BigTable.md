@@ -17,4 +17,7 @@ ts在启动时需要从chubby获取互斥锁，来保证一个子表只能被一
 #### 5. minor、merging、major这三种compaction有什么区别？
 minor是为了防止memtable占用内存过多，每次minor生成一个sstable；merging则是对sstable跟memtable进行compaction，为了防止sstable文件数过多；major则是合并所有sstable，不包含已经删除的信息。
 
+#### 6. Tablet在内存中的数据结构如何设计？
+(row:string, column:string, timestamp:int64) ->string map<RowKey, map<ColummnFamily:Qualifier, map<Timestamp, Value>>>
+
 
