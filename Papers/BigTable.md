@@ -3,7 +3,7 @@
 ```
 ## 论文思考
 #### 1.	GFS可能出现重复记录或者padding，Bigtable如何处理这种情况使得对外提供强一致性模型？
-操作日志通过唯一序号去重；sstable只索引最后一条成功的数据。
+本质上bigtable可以理解为gfs的分布式索引。主要存储两种数据：操作日志和sstable。操作日志通过唯一序号去重；sstable只索引最后一条成功的数据。通过chubby来保证同一时刻只有一个server对一个子表进行索引。
 
 #### 2. 为什么Bigtable设计成Root、Meta、User三级结构，而不是两级或者四级结构？
 因为三层结构能够满足几乎所有的业务需求数据量。四层的话会增加额外的请求。假设表大小为128m，元数据为1kb，那么2层的结构，最多支持128m＊（128m/1kb）=16tb的数据量，很小。
@@ -24,5 +24,8 @@ minor是为了防止memtable占用内存过多，每次minor生成一个sstable�
 分为两级：scan cache和block cache。scan cache缓存来自sstable返回的key－value值；block cache缓存从gfs读取的sstable。前者用于提高重复读的效率，后者提高读key附近key的效率。
 
 #### 8. tablet分裂的流程是怎样的？
-首先是索引信息分割；然后是实际数据分割，每次分割在metadata表中添加一条entry，同时上报给master。如果上报失败，再次load的时候tablet server会通知到master。这里注意无论是master还是tablet server失败，都会重新load。
+首先是索引信息分割；然后是实际数据分割，每次分割在上一级元数据表中添加一条entry，同时上报给master。如果上报失败，再次load的时候tablet server会通知到master。这里注意无论是master还是tablet server失败，都会重新load。这一步的理解需要记住root表只有一个不会分裂，所以meta表和user表分裂之后加入tabletserver挂了，通过元数据信息，master也能知道进行了分裂。反之，如果是master挂了，重新加载master之后通过load tablet server能够知道已经进行了分裂。
+
+#### 9. 如何使得tablet迁移过程停服务时间尽量短？
+迁移之前进行一次minor compaction，这期间不停服务；迁移过程再执行一次minor compaction，停止服务，由于第一次minor compaction到第二次之间写操作一半不会很多，所以停服时间比较短。这里注意一下，由于进行了compaction，所以新表不需要重放操作日志，也能节省时间。
 
