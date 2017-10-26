@@ -2,6 +2,7 @@
 包含对于gfs论文的一些理解,会不断更新新的思考，以及与其他类似paper的对比。
 ```
 ## 论文思考
+### 一、问题
 #### 1、为什么存储三个副本？而不是两个或者四个？
 在可用性和性能之间的trade off，2副本可用性低，4副本复制成本较高，性能会偏低一些。
 
@@ -11,3 +12,48 @@
 
 #### 3、ChunkServer重启后可能有一些过期的chunk,Master如何能够发现？
 重启之后会给master汇报信息，chunk是包含版本信息的，master可以通过版本信息发现是否过期。
+
+#### 4、为什么要将数据流和控制流分开？如果不分开，如何实现追加流程？
+数据流河控制流分开是gfs设计的一大特点。有几点好处：
+	
+	- 可以更好的利用网络的拓扑结构，由于gfs是先push所有数据到所有副本（从master拿到的信息），可以选择拓扑上最近的节点先push数据
+	- 可以pipeline，贴一下论文给出的理论最高值：Without network congestion, the ideal elapsed time for transferring B bytes to R replicas is B/T + RL where T is the network throughput and L is latency to transfer bytes between two machines. 
+
+不分开的话可以采用类似于传统分布式系统的replica技术来实现。吞吐会变低。
+
+#### 5、租约（Lease）是什么？在GFS起什么作用？它与心跳（heartbeat）有何区别？
+参考论文：[leases](http://web.eecs.umich.edu/~mosharaf/Readings/Leases.pdf)
+
+租约在gfs默认初始值时60s（经验值）。起到的作用是：
+
+```
+从论文来看，主要是减轻master的负载，预先颁发租约之后，client只需要去primary提交修改数据的操作。不需要每个操作都访问master。
+```
+心跳可以传递续约信息。心跳是client（slave）向server（master）汇报自己的状态；租约是server（master）给client（slave）颁发一定期限的数据修改权。
+
+#### 6、假设服务一千万个文件，每个文件1GB,Master中存储的元数据大概占用多少内存？
+```
+ The master maintains less than 64 bytes of metadata for each 64 MB chunk.
+```
+1GB/64MB = 1024 / 64 = 16。总共需要16 * 10000000 * 64 B = 10GB
+
+#### 7、Chunk的大小为何选择64MB？这个选择主要基于哪些考虑?
+参考论文2.5节：
+
+```
+大一点chunk size好处：
+1、减少了client去访问master的请求
+2、一个chunk可以包含很多数据满足多种操作的需求，client避免重复去读取数据进行操作
+3、减少metadata量
+坏处：
+部分小文件可能会成为热点数据，因为一个chunk就够了，多个client去访问这一个chunk。
+
+```
+
+#### 8、GFS有时会出现重复记录或者补零记录（padding），为什么？
+参考论文3.3:由于在append的时候，可能有部分chunk server 副本失败了，client会重试，导致了重复记录；如果在写数据的时候发现写之前会超过chunk max size（默认64mb），那么会先padding，然后创建一个新的chunk。
+
+### 二、各个章节的思考
+#### 3.3
+at-least-once语义。有一个疑问，如果刚好primary的chunk可以存放当前的数据，但是second的不能呢？这里可以通过工程实现来避免。
+
