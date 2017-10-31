@@ -42,3 +42,23 @@
 4. 文档模型是scheme-on-read的模型，也就是read的时候需要额外操作去处理scheme相关内容，可以实现query向后兼容性；关系模型可以理解为是scheme－on－write，所以scheme的变化会引起部分query失效。
 5. 文档模型能更好的利用data locality，但是update的时候需要全部更新。其实这里个人理解也是需要根据业务场景做trade off。
 ```
+### 2、Query language
+1、 Declarative vs Imperative
+
+```
+An imperative language tells the computer to perform certain operations in a certain order. You can imagine stepping through the code line by line, evaluating conditions, updating variables, and deciding whether to go around the loop one more time.In a declarative query language, like SQL or relational algebra, you just specify the pattern of the data you want—what conditions the results must meet, and how you want the data to be transformed (e.g., sorted, grouped, and aggregated)—but not how to achieve that goal. It is up to the database system’s query optimizer to decide which indexes and which join methods to use, and in which order to execute various parts of the query.
+可以理解就是declarative将部分优化交给了query engine。也就是常说的query optimizer。
+```
+
+2、 MapReduce
+
+```
+ref: mapreduce论文
+一种编程模型，这小节主要是distribution sql比较有趣。
+```
+
+### 3、Graph-like models
+最后小节介绍了图模型，对于many-many relation，图数据库是比较好的db。同时介绍了基于图数据库的query语言，这里没细看。
+
+###### 总结
+提出的观点就是在使用db之前，先理解自己数据的relation，才能选择合适的db。另外，各种模型本质上对scheme的要求就是application是在读还是在写的时候对scheme有一个强要求。
