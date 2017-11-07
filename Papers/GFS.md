@@ -56,6 +56,15 @@
 #### 9、负载的影响因素有哪些？如何计算一台机器的负载值？
 网络 io cpu等，具体的负载值计算论文没找到对应的reference，各部分权重应该根据场景做调整
 
+#### 10、Master如何实现高可用性？
+参考论文5.1小节：快速恢复和复制是gfs使用的保证master和chunkserver的高可靠性策略。
+
+```
+1、client通过类dns别名的方式访问master，所以master切换是透明的
+2、通过shadow server来保证对数据实时性要求不是那么高的client的读操作的高可用性
+3、我理解本质上master保存的信息不算很多，所以能保证在类supervisor的monitor的拉取下快速恢复
+```
+
 ### 二、各个章节的思考
 #### 3.3
 at-least-once语义。有一个疑问，如果刚好primary的chunk可以存放当前的数据，但是second的不能呢？这里可以通过工程实现来避免。
