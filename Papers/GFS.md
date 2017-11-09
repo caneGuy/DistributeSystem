@@ -65,6 +65,15 @@
 3、我理解本质上master保存的信息不算很多，所以能保证在类supervisor的monitor的拉取下快速恢复
 ```
 
+#### 11、GFS Master需要存储哪些信息？Master数据结构如何设计？
+参考论文2.6小节：
+
+```
+namespace、文件到chunk的映射以及chunk的位置信息
+
+namespace采用的是B-Tree，对于名称采用前缀压缩的方法，节省空间；（文件名，chunk index）到chunk的映射，hashmap；chunk到chunk的位置信息，用multi_hashmap，因为是一对多的映射。
+```
+
 ### 二、各个章节的思考
 #### 3.3
 at-least-once语义。有一个疑问，如果刚好primary的chunk可以存放当前的数据，但是second的不能呢？这里可以通过工程实现来避免。
