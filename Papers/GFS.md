@@ -74,7 +74,21 @@ namespace、文件到chunk的映射以及chunk的位置信息
 namespace采用的是B-Tree，对于名称采用前缀压缩的方法，节省空间；（文件名，chunk index）到chunk的映射，hashmap；chunk到chunk的位置信息，用multi_hashmap，因为是一对多的映射。
 ```
 
+#### 12、如果ChunkServer下线后过一会重新上线，GFS如何处理？
+参考论文第4.5小节：
+
+```
+有一个chunk version的概念：
+（1）如果下线期间chunk version改变了，那么master能够感知到，然后通过lazy的gc策略回收
+（2）如果没有改变，那么
+```
+
 ### 二、各个章节的思考
+#### 2.6
+```
+2.6.3:
+The checkpoint is in a compact B-tree like form that can be directly mapped into memory and used for namespace lookup without extra parsing.有什么含义和提示？
+```
 #### 3.3
 at-least-once语义。有一个疑问，如果刚好primary的chunk可以存放当前的数据，但是second的不能呢？这里可以通过工程实现来避免。
 
