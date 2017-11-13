@@ -84,6 +84,16 @@ namespace采用的是B-Tree，对于名称采用前缀压缩的方法，节省�
 （3）为了更好的保证：chunk version会发送给client用语校验；master在gc之前，读取数据会根据chunk version过滤
 ```
 
+#### 13、磁盘可能出现位翻转错误，chunkserver如何应对？
+参考论文5.2小节：
+
+```
+我们可以收获到通过设计checksum机制来防止数据“腐坏”。
+1、对于读操作：读取所有的block，对check sum做验证
+这里涉及一个性能问题：gfs读取会尽量将涉及的block范围缩小；check sum计算可以数据读取并行，比如读取了block1就可以直接做校验同时i/o启动去读取block2
+2、
+```
+
 ### 二、各个章节的思考
 #### 2.6
 ```
