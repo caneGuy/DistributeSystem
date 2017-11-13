@@ -81,6 +81,7 @@ namespace采用的是B-Tree，对于名称采用前缀压缩的方法，节省�
 有一个chunk version的概念：
 （1）如果下线期间chunk version改变了，那么master能够感知到，然后通过lazy的gc策略回收
 （2）如果没有改变，那么就直接作为chunk replica使用
+（3）为了更好的保证：chunk version会发送给client用语校验；master在gc之前，读取数据会根据chunk version过滤
 ```
 
 ### 二、各个章节的思考
