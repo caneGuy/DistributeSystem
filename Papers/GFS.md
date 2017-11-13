@@ -104,3 +104,6 @@ The checkpoint is in a compact B-tree like form that can be directly mapped into
 #### 3.3
 at-least-once语义。有一个疑问，如果刚好primary的chunk可以存放当前的数据，但是second的不能呢？这里可以通过工程实现来避免。
 
+#### 5.3
+对于一个分布式系统，应该能够很好的记录内部的一些状态用于问题追踪。gfs给了很实际的例子，rpc事件和chunk server重启，关闭等事件的记录。
+
