@@ -79,4 +79,6 @@ ref: mapreduce论文
 坏处：
 － range查询慢
 － 如果索引不能完全存储在内存，会严重影响性能（因为hash table在disk存储的话性能很差）
+
+append only常见的做法就是：分段＋后台的compaction。
 ```
