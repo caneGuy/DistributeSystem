@@ -62,3 +62,21 @@ ref: mapreduce论文
 
 ###### 总结
 提出的观点就是在使用db之前，先理解自己数据的relation，才能选择合适的db。另外，各种模型本质上对scheme的要求就是application是在读还是在写的时候对scheme有一个强要求。
+
+## Chapter3
+```
+从数据库的实现来理解数据的存储和查询
+```
+### 1、Data Structures That Power Your Database
+#### 1、hash index
+```
+介绍了hash索引：
+常见使用是结合append only的data file使用。添加或者更新key value数据都是append的模式。
+好处：
+－ append的快
+－ 并发控制方便，不会说update一半导致旧数据和新数据的不可理解（gfs的undefined）行为
+－ 可以不断的merge fragment来控制占用空间的大小
+坏处：
+－ range查询慢
+－ 如果索引不能完全存储在内存，会严重影响性能（因为hash table在disk存储的话性能很差）
+```
