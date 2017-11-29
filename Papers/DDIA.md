@@ -82,3 +82,11 @@ ref: mapreduce论文
 
 append only常见的做法就是：分段＋后台的compaction。
 ```
+#### 2、sstable/lsm-tree
+```
+sstable第一次看到是在bigtable的论文里面。ddia中这一小节介绍了很多系统都使用了这个概念：cassandre hbase lucene leveldb rocksdb等等。
+基本思想：
+- sorted key：基于内存的avl 或者是 rb－tree。组成memtable
+- memtable超过阈值之后就刷入disk形成segment
+- 为了防止segment过多，后台进行compaction
+```
