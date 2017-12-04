@@ -82,6 +82,7 @@ ref: mapreduce论文
 
 append only常见的做法就是：分段＋后台的compaction。
 ```
+
 #### 2、sstable/lsm-tree
 ```
 sstable第一次看到是在bigtable的论文里面。ddia中这一小节介绍了很多系统都使用了这个概念：cassandre hbase lucene leveldb rocksdb等等。
@@ -91,5 +92,17 @@ sstable第一次看到是在bigtable的论文里面。ddia中这一小节介绍�
 - 为了防止segment过多，后台进行compaction
 
 提到了**bloom filter**，这个在分布式系统很常见的技术。
+
+```
+
+#### 3、b-tree
+```
+- 固定size的page来管理索引数据
+- 通过wal来保证数据的一致性
+
+如何优化性能？
+- copy on write方式来避免wal
+- 兄弟指针（叶子节点包含前后节点的指针，避免回溯到父节点）
+- 平铺叶子page，避免过多的disk seek（但是管理麻烦－lsm的后台merge就能很好的自动将数据顺序化）
 
 ```
