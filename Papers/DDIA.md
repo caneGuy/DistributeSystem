@@ -106,3 +106,19 @@ sstable第一次看到是在bigtable的论文里面。ddia中这一小节介绍�
 - 平铺叶子page，避免过多的disk seek（但是管理麻烦－lsm的后台merge就能很好的自动将数据顺序化）
 
 ```
+
+#### 4、B-tree vs log-structre
+```
+2个知识点：write amplification；ssd对于over write的次数有限制（如果要耗尽了）
+b-tree的缺点：
+- 相对于lsm有更多的write  amplification
+- 压缩比不如lsm
+- lsm顺序写比b tree的随机写要高效
+
+lsm缺点：
+- compaction和实时读写会强占disk的吞吐
+- lsm可能存在一个key在多个segment（append模式），一致性可能有问题
+- segment可能过多，由于磁盘吞吐限制不够
+- 高峰时期的性能不可预测（可能看avg指标很好，其实高峰期特别慢）
+
+```
