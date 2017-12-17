@@ -12,6 +12,11 @@
 #### 2、query range extraction（sharding裁剪核心）
 
 #### 3、distributed apply
+```
+常用场景：索引表和数据表join（分布式场景下出现的）
+ － 将input做batch发送到remote shard server
+ － 在remote shard server做local join
+```
 
 ## Reference
 1、[the morning paper](https://blog.acolyer.org/2017/07/03/spanner-becoming-a-sql-system/)
