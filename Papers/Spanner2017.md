@@ -15,8 +15,12 @@
 #### 2、query range extraction（sharding裁剪核心）
 ```
 - Distributed range extraction figure out which table shards are referenced by a query.
-- Seek range extraction determines what fragments of a relevant shard to read from the underlying storage stack.
-- Lock range extraction determines what fragments of a table are to be locked (pessimistic txns) or checked for potential pending modifications (snapshot txns).
+- Seek range extraction determines what fragments of a relevant shard to read from the underlying storage stack.避免scan一个大range。
+- Lock range extraction determines what fragments of a table are to be locked (pessimistic txns) or checked for potential pending modifications (snapshot txns).将锁的粒度细化。
+```
+小结：
+```
+使用了两种方式：compile time的rewrite和run time的filter tree
 ```
 
 #### 3、distributed apply
