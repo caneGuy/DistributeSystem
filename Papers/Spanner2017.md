@@ -18,9 +18,11 @@
 - Seek range extraction determines what fragments of a relevant shard to read from the underlying storage stack.避免scan一个大range。
 - Lock range extraction determines what fragments of a table are to be locked (pessimistic txns) or checked for potential pending modifications (snapshot txns).将锁的粒度细化。
 ```
-小结：
+**小结：**
+
 ```
-使用了两种方式：compile time的rewrite和run time的filter tree
+使用了两种方式：compile time的rewrite和run time的filter tree.
+简单理解就是，compile time先生成一系列相关的scan，到了runtime再对实际的scan进行过滤。
 ```
 
 #### 3、distributed apply
