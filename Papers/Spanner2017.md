@@ -1,10 +1,6 @@
 ```
 <<Spanner: Become a sql system>>阅读笔记
 ```
-## 核心问题
-#### 1、如何保证**distributed**查询的效率？
-#### 2、如何决定去哪个server执行查询？
-#### 3、为什么要支持query restart？
 
 ## 基本概念
 #### 1、distributed union
@@ -31,6 +27,23 @@
  － 将input做batch发送到remote shard server
  － 在remote shard server做local join
 ```
+
+#### 4、query restart
+```
+支持查询重启，当然是对于瞬时的异常容错：cpu、network，值得一提的是spanner本身会不断的loadbalance，所以数据的move导致的失败也是属于瞬时异常。
+
+难度：
+1、动态分区
+2、非幂等操作
+3、不同版本的兼容性
+```
+
+## 核心问题
+#### 1、如何保证**distributed**查询的效率？
+#### 2、如何决定去哪些server执行查询？如何减少scan的范围？如何细化锁的粒度？
+基于range extraction。
+#### 3、为什么要支持query restart？
+paper中提了很多点。主要从用户使用和系统设计本身简洁性做了考虑。比较重要的是，支持了restart必然有其他限制和不能提供的保证等等。这些细节没说，但是思路是值得注意的。在设计系统的时候，需要做好这种trade off。
 
 ## Reference
 1、[the morning paper](https://blog.acolyer.org/2017/07/03/spanner-becoming-a-sql-system/)
