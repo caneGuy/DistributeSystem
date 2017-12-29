@@ -5,7 +5,8 @@
 ## 基本概念
 #### 1、distributed union
 ```
-目的是为了让scan操作涉及的shard越少越好，其实分布式sql引擎这个是基本的优化点，只是各家实现会有差异。
+Scan(T) ⇒ DistributedUnion[shard ⊆ T](Scan(shard))
+A distributed union operator conceptually divides one or more tables into multiple splits, remotely evaluates a subquery independently on each split, and then unions all results.
 ```
 
 #### 2、query range extraction（sharding裁剪核心）
@@ -44,6 +45,19 @@
 基于range extraction。
 #### 3、为什么要支持query restart？
 paper中提了很多点。主要从用户使用和系统设计本身简洁性做了考虑。比较重要的是，支持了restart必然有其他限制和不能提供的保证等等。这些细节没说，但是思路是值得注意的。在设计系统的时候，需要做好这种trade off。
+#### 4、为什么distribute scan可以下推到数据源，甚至是对于group by或者是orderby操作？
+```
+Spanner pushes down such basic operations as projection and
+filtering below Distributed Union. Being aware of keys or identity
+columns of the underlying data set, Spanner can push more complex
+operations such as grouping and sorting to be executed close
+to the data when the sharding columns are a proper subset of grouping
+or sorting columns. This is possible because Spanner uses range
+sharding
+因为使用了范围分片，所以，sharding key在每个范围内都是有序的。且全局有序。
+```
 
 ## Reference
 1、[the morning paper](https://blog.acolyer.org/2017/07/03/spanner-becoming-a-sql-system/)
+
+2、[google cloud patform](https://cloud.google.com/spanner/docs/query-execution-operators#distributed_union)
