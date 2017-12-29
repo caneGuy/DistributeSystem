@@ -39,8 +39,10 @@ A distributed union operator conceptually divides one or more tables into multip
 3、不同版本的兼容性
 ```
 
-## 核心问题
+## 问题
 #### 1、如何保证**distributed**查询的效率？
+核心思想：distributed union。paper第3章介绍的很详细，几乎每个小段都是一个设计思路。从三个方面进行了优化：（1）Distributed query compilation；（2）Distributed Execution；（3）Distributed joins
+
 #### 2、如何决定去哪些server执行查询？如何减少scan的范围？如何细化锁的粒度？
 基于range extraction。
 #### 3、为什么要支持query restart？
@@ -56,6 +58,10 @@ or sorting columns. This is possible because Spanner uses range
 sharding
 因为使用了范围分片，所以，sharding key在每个范围内都是有序的。且全局有序。
 ```
+
+## 我的关注点
+Parallel-consumer API -- 实现细节？最后结果怎么collect呢？
+query start －－ 有趣的思路
 
 ## Reference
 1、[the morning paper](https://blog.acolyer.org/2017/07/03/spanner-becoming-a-sql-system/)
