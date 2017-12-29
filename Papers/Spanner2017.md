@@ -1,6 +1,7 @@
 ```
 <<Spanner: Become a sql system>>阅读笔记
 ```
+**论文想解决的问题是：在分布式数据库的情况下，提供高性能的sql执行引擎**
 
 ## 基本概念
 #### 1、distributed union
