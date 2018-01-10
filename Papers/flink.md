@@ -3,7 +3,7 @@
 ```
 ### 解决什么问题？
 主要是解决之前各种框架或者实现在支持streaming计算的时候，存在要么有延时，要么有复杂度过高的问题。
-同时，基于streaming的模型，抽象出对batch等运算的高效率支持。(这一点挺有意思，和之前的基于batch再去处理streaming很不一样)
+同时，基于streaming的模型，抽象出对batch等运算的高效率支持。(这一点挺有意思，和之前spark的基于batch再去处理streaming很不一样)
 
 ```
 The contributions of this paper are as follows:
