@@ -21,5 +21,12 @@ core两个抽象：dataset和datastream，对应了batch和streaming
 
 #### 执行流的抽象？
 Although users can write Flink programs using a multitude of APIs, all Flink programs eventually compile down to a common representation: the dataflow graph.
+对标spark的dag。
+
+#### Operators?
+
+#### data streams?
+Flink’s intermediate data streams are the core abstraction for data-exchange between operators.
 
 #### 如何进行容错的？
+这个问题比较大，有另外一篇论文介绍。
