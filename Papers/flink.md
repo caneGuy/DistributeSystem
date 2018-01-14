@@ -41,3 +41,8 @@ Flink’s intermediate data streams are the core abstraction for data-exchange b
 
 #### 如何进行容错的？
 这个问题比较大，有另外一篇论文介绍。
+
+
+### 疑问？
+#### 如何基于checkpointing实现exactly once？
+可以这么理解：checkpoint成功是最后一个状态操作符处理完barrier之后存储成功才算的。那么通过这个机制就可以保证每条记录在输出到结果之前只处理过一次（因为输出结果了就已经checkpoint了）。
