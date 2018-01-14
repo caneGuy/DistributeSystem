@@ -24,6 +24,17 @@ Although users can write Flink programs using a multitude of APIs, all Flink pro
 对标spark的dag。
 
 #### Operators?
+##### DataSet
+批处理作业，会通过一个查询优化器转化为底层dataflow的runtime。比较好奇query optimizer这里怎么实现的。以及它的cbo实现细节。
+另外，有以下几点比较有意思：
+
+```
+- To handle arbitrary objects, Flink uses type inference and custom serialization mechanisms. 
+- By keeping the data processing on binary representation and off-heap, Flink manages to reduce the garbage collection overhead, and use cache-efficient and robust algorithms that scale gracefully under memory pressure.
+-  Flink introduces further novel optimisation techniques such as the concept of delta iterations, which can exploit sparse computational dependencies
+```
+##### DataStream
+流式作业
 
 #### data streams?
 Flink’s intermediate data streams are the core abstraction for data-exchange between operators.
