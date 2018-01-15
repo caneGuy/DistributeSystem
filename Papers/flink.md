@@ -34,7 +34,18 @@ Although users can write Flink programs using a multitude of APIs, all Flink pro
 -  Flink introduces further novel optimisation techniques such as the concept of delta iterations, which can exploit sparse computational dependencies
 ```
 ##### DataStream
-流式作业
+流式作业的api。主要下面几个概念比较有趣：
+
+```
+- Process time:节点的timestamp
+- Event time:消息自带timestamp
+- Ingres time:flink给输入的消息设置一个有序的timestamp
+
+基于上面的几种时间来划分窗口，然后处理。注意在处理消息的时候会有如下问题，所以才引申出上面的概念：
+－ 用户希望根据消息时间来分段
+－ 消息无序的话，基于节点的时间来分段，会出现不同节点，可能两个消息在a节点是一个window，传递到b变成了两个window，有可能会导致结果出错。
+
+```
 
 #### data streams?
 Flink’s intermediate data streams are the core abstraction for data-exchange between operators.
