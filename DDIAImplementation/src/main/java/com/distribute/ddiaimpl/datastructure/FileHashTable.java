@@ -21,25 +21,39 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
 import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.HashMap;
 
 /**
  * Key mapping to address on disk.
  */
 public class FileHashTable {
 
-  private transient FileHashEntry[] fileHashEntries;
+  private transient HashMap<String, FileHashEntry> fileHashEntries;
 
   public FileHashTable(int initialSize) {
-    fileHashEntries = new FileHashEntry[initialSize];
-  }
-
-  private void reash() {
-
+    fileHashEntries = new HashMap<>(initialSize);
   }
 
   private long hashFunc(String key) {
     HashFunction hf = Hashing.murmur3_128();
     return hf.hashBytes(key.getBytes()).asLong();
+  }
+
+  private void readThroughRandom(FileHashEntry hashEntry) {
+    // MappedByteBuffer + RandomAccessFile
+    try {
+      FileChannel fci = hashEntry.file.getChannel();
+      long size = fci.size();
+      MappedByteBuffer mbbi = fci.map(FileChannel.MapMode.READ_ONLY, 0, size);
+      long start = System.currentTimeMillis();
+      for (int i = 0; i < size; i++) {
+        byte b = mbbi.get(i);
+      }
+    } catch (Exception e) {
+      // TODO
+    }
   }
 
   private static class FileHashEntry {
