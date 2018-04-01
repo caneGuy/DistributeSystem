@@ -26,14 +26,29 @@ import java.nio.channels.FileChannel;
 import java.util.HashMap;
 
 /**
- * Key mapping to address on disk.
+ * Keys mapping to address on disk and support read and write through given key.
+ * Some design points should take into consideration:
+ * 1. how to read and write file on disk with good performance
+ * 2. how to improve a single operation of file access
+ * 3. how to choose hash algorithm
+ * We can use solution like bitcask which use read and write lock for active file.
+ * And read performance can use older files to improve.
  */
 public class FileHashTable {
 
-  private transient HashMap<String, FileHashEntry> fileHashEntries;
+  private transient HashMap<Long, FileHashEntry> fileHashEntries;
 
   public FileHashTable(int initialSize) {
     fileHashEntries = new HashMap<>(initialSize);
+  }
+
+  public ByteString[] getContent(String key) {
+    long entryKey = hashFunc(key);
+    try {
+      return readThroughRandom(fileHashEntries.get(entryKey));
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   private long hashFunc(String key) {
@@ -41,24 +56,24 @@ public class FileHashTable {
     return hf.hashBytes(key.getBytes()).asLong();
   }
 
-  private void readThroughRandom(FileHashEntry hashEntry) {
+  private ByteString[] readThroughRandom(FileHashEntry hashEntry)
+          throws Exception {
     // MappedByteBuffer + RandomAccessFile
     try {
       FileChannel fci = hashEntry.file.getChannel();
-      long size = fci.size();
-      MappedByteBuffer mbbi = fci.map(FileChannel.MapMode.READ_ONLY, 0, size);
-      long start = System.currentTimeMillis();
-      for (int i = 0; i < size; i++) {
+      MappedByteBuffer mbbi = fci.map(FileChannel.MapMode.READ_ONLY,
+              hashEntry.position, hashEntry.size);
+      for (int i = hashEntry.position; i < hashEntry.size; i++) {
         byte b = mbbi.get(i);
       }
     } catch (Exception e) {
-      // TODO
+      throw e;
     }
   }
 
   private static class FileHashEntry {
     RandomAccessFile file;
-    int start;
-    int end;
+    int size;
+    int position;
   }
 }
