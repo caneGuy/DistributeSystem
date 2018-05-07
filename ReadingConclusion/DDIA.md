@@ -136,3 +136,8 @@ lsm缺点：
 ```
 分布式系统的备份
 ```
+
+## Chapter 10
+```
+批处理系统：unix log处理－》mapreduce－》mpp／sql on hadoop
+```
