@@ -16,11 +16,12 @@ Array支持fair锁，也就是严格的fifo，但是吞吐量低。
 ```
 
 ### ThreadLocal?
-- 初步理解
+- 基本概念
 
 ```
-1. threadlocal变量：通过这个变量可以调用threadlocal api。api底层是操作thread对应的threadlocalmap
-2. threadlocalmap：每个thread持有一个hashmap保存了所有该线程使用的threadlocal变量值（这个和上面不一样的，这个变量是指的实际值，上面的理解为一个操作入口）
+1. threadlocal变量：通过这个变量可以调用threadlocal api.api底层是操作thread对应的threadlocalmap
+2. threadlocalmap：每个thread持有一个hashmap保存了所有该线程使用的实际值
+3. entry:是threadlocalmap的实际保存数据的结构，key就是threadlocal变量
 ```
 
 - 为什么要private static？
