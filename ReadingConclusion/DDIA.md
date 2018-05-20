@@ -141,3 +141,8 @@ lsm缺点：
 ```
 批处理系统：unix log处理－》mapreduce－》mpp／sql on hadoop
 ```
+#### 1. 批处理计算系统最主要需要解决的问题：
+```
+- Partitioning
+- Fault tolerance
+```
