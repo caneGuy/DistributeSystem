@@ -26,6 +26,8 @@ java 网络相关知识和jdk 源码
 ```
 
 ### Reactor模式？
+
+
 ### NIO如何实现非阻塞？
 首先，搞清楚：阻塞和非阻塞，同步和异步的区别。这个在(unix network programming volume 1 the sockets networking i/o models)中有详细介绍。也可以参考[同步 异步 阻塞 非阻塞](https://blog.csdn.net/historyasamirror/article/details/5778378)。
 
@@ -38,4 +40,5 @@ java 网络相关知识和jdk 源码
 ### zero copy?
 
 ### Reference
-[Doug Lea讲解NIO](http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf)
+- [Doug Lea讲解NIO](http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf)
+- [Reactor论文](http://www.dre.vanderbilt.edu/~schmidt/PDF/reactor-siemens.pdf)
