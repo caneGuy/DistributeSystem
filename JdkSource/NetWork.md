@@ -31,7 +31,9 @@ java 网络相关知识和jdk 源码
 
 其次，搞清楚nio的实现。首先我们要明确，java nio是new io，它也可以实现阻塞的通信模型。**只不过它支持非阻塞，这和大部分资料直接上来就说non-blocking不一样**。至于说什么时候使用阻塞通信，那是另一个话题。
 
-关键类，selector，channel，buffer。最后底层都是调用的native，对native方法做了一些抽象。
+关键类，selector，channel，buffer。最后底层都是调用的native，对native方法做了一些抽象。native方法调用的是poll epoll等接口
+
+题外话，jdk1.4以前，调用的是select接口，所以是同步阻塞的。适用于连接数少对资源要求高的（个人理解nio能hold住这个场景，只不过是历史包袱）
 
 ### zero copy?
 
