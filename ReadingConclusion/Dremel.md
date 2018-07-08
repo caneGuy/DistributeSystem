@@ -12,6 +12,8 @@ This is what repetition level is for: it is the level at which we have to create
 This is what the definition level is for: from 0 at the root of the schema up to the maximum level for this column. When a field is defined then all its parents are defined too, but when it is null we need to record the level at which it started being null to be able to reconstruct the record.
 ```
 
+### Parquet实现
+
 ## 参考
 http://blog.csdn.net/dc_726/article/details/41627613 dremel模型详解
 https://blog.twitter.com/engineering/en_us/a/2013/dremel-made-simple-with-parquet.html twitter详解
