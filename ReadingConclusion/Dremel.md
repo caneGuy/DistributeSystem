@@ -14,6 +14,16 @@ This is what the definition level is for: from 0 at the root of the schema up to
 
 ### Parquet实现
 #### 存储格式
+一些概念：
+
+```
+- page
+
+- column chunk
+ 
+- row group
+
+```
 #### 对象模型转换器
 #### 对象模型
 
