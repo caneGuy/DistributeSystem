@@ -17,11 +17,11 @@ This is what the definition level is for: from 0 at the root of the schema up to
 一些概念：
 
 ```
-- page
+- page:压缩和编码的单元，设计schema 的时候不需要考虑这个
 
-- column chunk
+- column chunk:表示一列，repetion level和define level
  
-- row group
+- row group:列块组成
 
 ```
 #### 对象模型转换器
