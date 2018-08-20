@@ -24,7 +24,7 @@ This is what the definition level is for: from 0 at the root of the schema up to
 - row group:列块组成
 
 ```
-列式存储：压缩率，skip无关列，适合olap常用模式（分组，排序，聚合）
+列式存储：压缩率，skip无关列，适合olap常用模式（分组，排序，聚合），分析型查询无需scan所有列
 #### 对象模型转换器
 #### 对象模型
 
