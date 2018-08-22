@@ -18,6 +18,7 @@ This is what the definition level is for: from 0 at the root of the schema up to
 
 ```
 - page:压缩和编码的单元，设计schema 的时候不需要考虑这个
+	- 字典页；数据页；索引页
 
 - column chunk:表示一列，repetion level和define level
  
