@@ -1,5 +1,6 @@
 ```
 Google dremel paper 论文阅读思考笔记
+parquet实现
 ```
 ## 数据模型
 ### Repetition Level
